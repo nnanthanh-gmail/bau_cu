@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Bỏ Phiếu Blockchain</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <i class="fas fa-check-to-slot logo-icon"></i>
+            <h1>Hệ Thống Bỏ Phiếu Blockchain</h1>
+            <p class="subtitle">Minh bạch - Bảo mật - Phi tập trung</p>
+        </header>
+
+        <div id="authSection" class="auth-container">
+            <div class="card auth-card">
+                <i class="fas fa-user-shield auth-icon"></i>
+                <h2>Xác Thực Danh Tính</h2>
+                <p>Vui lòng nhập tên tài khoản của bạn để tiếp tục.</p>
+                <input type="text" id="voterNameInput" placeholder="Ví dụ: Nguyễn Văn A...">
+                <button onclick="handleAuth()" class="btn-main">
+                    <i class="fas fa-sign-in-alt"></i> Xác Nhận & Đăng Nhập
+                </button>
+                <p class="note"><i class="fas fa-info-circle"></i> Tên này sẽ được lưu vĩnh viễn trên Blockchain.</p>
+            </div>
+        </div>
+
+        <div id="mainDashboard" style="display: none;">
+            <div class="user-bar">
+                <span id="displayRole" class="badge"></span>
+                <span id="displayName" class="user-name"></span>
+                
+                <button id="adminQuickBtn" onclick="toggleAdminPanel()" class="btn-admin-toggle" style="display: none;">
+                    <i class="fas fa-cog"></i> Bảng Quản Trị
+                </button>
+            </div>
+
+            <div id="adminSection" style="display: none;" class="admin-panel">
+                <button id="startElectionBtn" onclick="handleStartElection()" style="display:none; background: #e67e22; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; cursor: pointer;">
+                    <i class="fas fa-play"></i> BẮT ĐẦU BẦU CỬ
+                </button>
+                <h3><i class="fas fa-tools"></i> Quản Trị: Thêm Ứng Cử Viên</h3>
+                <div class="admin-input-group" style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="candidateNameInput" placeholder="Tên ứng viên mới...">
+                    <button onclick="addNewCandidate()" class="btn-add">
+                        <i class="fas fa-plus"></i> Xác Nhận Thêm Ứng Viên
+                    </button>
+                </div>
+            </div>
+            <div class="election-status-card">
+                    <div class="status-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="timerDisplay">Đang chờ khởi tạo...</span>
+                    </div>
+            </div>
+            <div class="card" style="margin-top: 25px; padding: 20px; border: 1px solid #ddd; background: #fdfdfd; border-radius: 12px;">
+                <h3 style="color: #2c3e50;"><i class="fas fa-fingerprint"></i> Danh sách Hash phiếu bầu</h3>
+                <hr>
+                <div id="voteHistoryList" style="max-height: 400px; overflow-y: auto;">
+                    <p>Đang tải lịch sử giao dịch...</p>
+                </div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="results-section">
+                    <h3><i class="fas fa-chart-bar"></i> Bảng Kết Quả Hiện Tại</h3>
+                    <div id="resultsChart" class="results-container">
+                        </div>
+                </div>
+
+                <div class="voting-section">
+                    <h3><i class="fas fa-list-ul"></i> Danh Sách Ứng Cử Viên</h3>
+                    <div id="candidateList" class="candidate-list-container">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleAdminPanel() {
+            const panel = document.getElementById("adminSection");
+            panel.style.display = (panel.style.display === "none") ? "block" : "none";
+        }
+    </script>
+
+    <script src="abi.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
