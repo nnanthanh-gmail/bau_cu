@@ -1,7 +1,7 @@
 let contract;
 let signer;
 let timerInterval;
-const contractAddress = "0xCAa1C7c84cC8095E977da1DaA9c57ce25C9c06a5"; 
+const contractAddress = "0xD8ff6ED3d81FE0F9ea84363f6a7219e35b432e4C"; 
 
 async function init() {
     if (window.ethereum) {
@@ -108,24 +108,23 @@ async function loadVoteHistory() {
         const total = Number(count);
         historyDiv.innerHTML = "";
 
-        if (total === 0) {
-            historyDiv.innerHTML = "<p>Chưa có phiếu bầu nào được ghi lại.</p>";
-            return;
-        }
-
-        // Hiển thị tối đa 10 phiếu bầu gần nhất
         for (let i = total - 1; i >= Math.max(0, total - 10); i--) {
             const record = await contract.voteHistory(i);
             const [voter, candidateId, timestamp, round] = record;
             
-            // Tạo mã Hash minh họa bằng Keccak256
+            // Chuyển đổi timestamp sang ngày giờ đọc được
+            const timeString = formatTimestamp(timestamp); 
+
             const fakeHash = ethers.keccak256(ethers.toUtf8Bytes(voter + timestamp.toString() + round.toString()));
 
             const row = document.createElement("div");
             row.style = "padding: 10px; border-bottom: 1px solid #eee; font-size: 0.85rem; font-family: monospace; background: white; margin-bottom: 5px; border-radius: 5px;";
+            
+            // THÊM DÒNG THỜI GIAN VÀO ĐÂY
             row.innerHTML = `
                 <div style="color: #2ecc71; word-break: break-all;"><strong>Hash:</strong> ${fakeHash}</div>
                 <div style="color: #7f8c8d; margin-top: 5px;">
+                    <i class="far fa-clock"></i> <strong>Thời gian:</strong> ${timeString} <br>
                     Ví: ${voter.substring(0, 8)}... | 
                     Ứng viên ID: ${candidateId} | 
                     Đợt: ${round}
@@ -235,6 +234,10 @@ async function deleteCandidate(id) {
         await tx.wait();
         location.reload();
     } catch (e) { alert(e.reason || e.message); }
+}
+function formatTimestamp(ts) {
+    const date = new Date(Number(ts) * 1000); // Nhân 1000 vì JS dùng miliseconds
+    return date.toLocaleString('vi-VN'); // Định dạng kiểu Việt Nam: DD/MM/YYYY, HH:MM:SS
 }
 
 window.handleAuth = handleAuth;
