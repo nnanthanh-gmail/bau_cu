@@ -1,7 +1,7 @@
 let contract;
 let signer;
 let timerInterval;
-const contractAddress = "0xD8ff6ED3d81FE0F9ea84363f6a7219e35b432e4C"; 
+const contractAddress = "0x4AB354388bEb70843b345e219bdc52840D6e2613"; 
 
 async function init() {
     if (window.ethereum) {
@@ -40,7 +40,6 @@ async function handleAuth() {
     location.reload();
 }
 
-// CẬP NHẬT: Hàm hiển thị Dashboard gọi thêm loadVoteHistory
 async function showDashboard(address, name) {
     document.getElementById("authSection").style.display = "none";
     document.getElementById("mainDashboard").style.display = "block";
@@ -48,17 +47,48 @@ async function showDashboard(address, name) {
     const adminAddr = await contract.admin();
     const adminBtn = document.getElementById("adminQuickBtn");
     const startBtn = document.getElementById("startElectionBtn");
+    const stopBtn = document.getElementById("stopElectionBtn");
+    const roleLabel = document.getElementById("userRole"); 
 
     const isAdmin = address.toLowerCase() === adminAddr.toLowerCase();
+
+    if (roleLabel) {
+        if (isAdmin) {
+            roleLabel.innerText = "QUẢN TRỊ VIÊN (ADMIN)";
+            roleLabel.style.background = "#e74c3c"; 
+            roleLabel.style.color = "white";
+        } else {
+            roleLabel.innerText = "NGƯỜI BẦU CHỌN (VOTER)";
+            roleLabel.style.background = "#2ecc71"; 
+            roleLabel.style.color = "white";
+        }
+    }
 
     if (isAdmin) {
         if (adminBtn) adminBtn.style.display = "inline-block";
         if (startBtn) startBtn.style.display = "block";
+
+        try {
+            const isStarted = await contract.electionStarted();
+            const endTime = await contract.endTime();
+            const now = Math.floor(Date.now() / 1000);
+            if (stopBtn) {
+                stopBtn.style.display = (isStarted && Number(endTime) > now) ? "block" : "none";
+            }
+
+            // Cập nhật UI Whitelist cho Admin
+            const isPrivateMode = await contract.isPrivate();
+            const modeSelect = document.getElementById("electionModeSelect");
+            const whitelistMgmt = document.getElementById("whitelistManager");
+            if (modeSelect) modeSelect.value = isPrivateMode.toString();
+            if (whitelistMgmt) whitelistMgmt.style.display = isPrivateMode ? "block" : "none";
+
+        } catch (err) { console.error(err); }
     }
 
     document.getElementById("displayName").innerText = `Xin chào: ${name}`;
     loadCandidates(isAdmin); 
-    loadVoteHistory(); // <-- GỌI HÀM DANH SÁCH HASH TẠI ĐÂY
+    loadVoteHistory(); 
     runCountdown();
 }
 
@@ -98,7 +128,6 @@ async function runCountdown() {
     timerInterval = setInterval(updateUI, 1000);
 }
 
-// THÊM MỚI: Hàm tải danh sách Hash từ Blockchain
 async function loadVoteHistory() {
     const historyDiv = document.getElementById("voteHistoryList");
     if (!historyDiv) return;
@@ -111,30 +140,21 @@ async function loadVoteHistory() {
         for (let i = total - 1; i >= Math.max(0, total - 10); i--) {
             const record = await contract.voteHistory(i);
             const [voter, candidateId, timestamp, round] = record;
-            
-            // Chuyển đổi timestamp sang ngày giờ đọc được
             const timeString = formatTimestamp(timestamp); 
-
             const fakeHash = ethers.keccak256(ethers.toUtf8Bytes(voter + timestamp.toString() + round.toString()));
 
             const row = document.createElement("div");
             row.style = "padding: 10px; border-bottom: 1px solid #eee; font-size: 0.85rem; font-family: monospace; background: white; margin-bottom: 5px; border-radius: 5px;";
-            
-            // THÊM DÒNG THỜI GIAN VÀO ĐÂY
             row.innerHTML = `
                 <div style="color: #2ecc71; word-break: break-all;"><strong>Hash:</strong> ${fakeHash}</div>
                 <div style="color: #7f8c8d; margin-top: 5px;">
                     <i class="far fa-clock"></i> <strong>Thời gian:</strong> ${timeString} <br>
-                    Ví: ${voter.substring(0, 8)}... | 
-                    Ứng viên ID: ${candidateId} | 
-                    Đợt: ${round}
+                    Ví: ${voter.substring(0, 8)}... | Ứng viên ID: ${candidateId} | Đợt: ${round}
                 </div>
             `;
             historyDiv.appendChild(row);
         }
-    } catch (err) {
-        console.error("Lỗi tải lịch sử Hash:", err);
-    }
+    } catch (err) { console.error("Lỗi tải lịch sử Hash:", err); }
 }
 
 async function loadCandidates(isAdmin) {
@@ -177,7 +197,10 @@ async function loadCandidates(isAdmin) {
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button onclick="vote(${id})" style="padding: 5px 15px; cursor: pointer; background:#3498db; color:white; border:none; border-radius:4px;">Bầu</button>
-                    ${isAdmin ? `<button onclick="deleteCandidate(${id})" style="padding: 5px 10px; cursor: pointer; background:#e74c3c; color:white; border:none; border-radius:4px;"><i class="fas fa-trash"></i></button>` : ""}
+                    ${isAdmin ? `
+                        <button onclick="openEditModal(${id}, '${name}')" style="padding: 5px 10px; cursor: pointer; background:#f1c40f; color:white; border:none; border-radius:4px;"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteCandidate(${id})" style="padding: 5px 10px; cursor: pointer; background:#e74c3c; color:white; border:none; border-radius:4px;"><i class="fas fa-trash"></i></button>
+                    ` : ""}
                 </div>
             `;
             listDiv.appendChild(item);
@@ -197,6 +220,30 @@ async function loadCandidates(isAdmin) {
     } catch (err) { console.error(err); }
 }
 
+// --- CÁC HÀM MỚI CHO WHITELIST & MODE ---
+async function changeElectionMode() {
+    const isPrivate = document.getElementById("electionModeSelect").value === "true";
+    try {
+        const tx = await contract.setElectionMode(isPrivate);
+        alert("Đang cập nhật chế độ...");
+        await tx.wait();
+        alert("Thành công!");
+        location.reload();
+    } catch (e) { alert(e.reason || "Lỗi giao dịch!"); }
+}
+
+async function addVoterToWhitelist() {
+    const addr = document.getElementById("whitelistAddressInput").value;
+    if (!ethers.isAddress(addr)) return alert("Ví không hợp lệ!");
+    try {
+        const tx = await contract.addToWhitelist(addr);
+        alert("Đang xử lý...");
+        await tx.wait();
+        alert("Đã thêm vào Whitelist!");
+        location.reload();
+    } catch (e) { alert(e.reason || "Lỗi!"); }
+}
+
 async function handleStartElection() {
     const min = prompt("Nhập số phút bầu cử mới:", "10");
     if (!min) return;
@@ -208,13 +255,24 @@ async function handleStartElection() {
     } catch (e) { alert(e.reason || "Lỗi: Cuộc bầu cử cũ chưa kết thúc!"); }
 }
 
+async function handleEndElection() {
+    if (!confirm("Xác nhận dừng cuộc bầu cử ngay lập tức?")) return;
+    try {
+        const tx = await contract.endElection();
+        alert("Đang yêu cầu dừng cuộc bầu cử...");
+        await tx.wait();
+        alert("Đã dừng cuộc bầu cử thành công!");
+        location.reload();
+    } catch (e) { alert(e.reason || "Lỗi khi dừng cuộc bầu cử!"); }
+}
+
 async function vote(id) {
     try {
         const tx = await contract.vote(id);
         await tx.wait();
         alert("Bầu chọn thành công!");
         location.reload();
-    } catch (e) { alert(e.reason || "Lỗi: Bạn đã bầu hoặc cuộc bầu cử kết thúc!"); }
+    } catch (e) { alert(e.reason || "Lỗi: Bạn không có quyền hoặc đã bầu!"); }
 }
 
 async function addNewCandidate() {
@@ -235,16 +293,42 @@ async function deleteCandidate(id) {
         location.reload();
     } catch (e) { alert(e.reason || e.message); }
 }
+
+function openEditModal(id, currentName) {
+    document.getElementById("editCandidateId").value = id;
+    document.getElementById("editCandidateName").value = currentName;
+    document.getElementById("editCandidateSection").style.display = "block";
+}
+
+async function saveCandidateEdit() {
+    const id = document.getElementById("editCandidateId").value;
+    const newName = document.getElementById("editCandidateName").value;
+    if (!newName) return alert("Vui lòng nhập tên!");
+
+    try {
+        const tx = await contract.updateCandidate(id, newName, ""); 
+        alert("Đang cập nhật thông tin...");
+        await tx.wait();
+        alert("Cập nhật thành công!");
+        location.reload();
+    } catch (e) { alert(e.reason || "Lỗi khi cập nhật!"); }
+}
+
 function formatTimestamp(ts) {
-    const date = new Date(Number(ts) * 1000); // Nhân 1000 vì JS dùng miliseconds
-    return date.toLocaleString('vi-VN'); // Định dạng kiểu Việt Nam: DD/MM/YYYY, HH:MM:SS
+    const date = new Date(Number(ts) * 1000);
+    return date.toLocaleString('vi-VN');
 }
 
 window.handleAuth = handleAuth;
 window.handleStartElection = handleStartElection;
+window.handleEndElection = handleEndElection;
 window.vote = vote;
 window.addNewCandidate = addNewCandidate;
 window.deleteCandidate = deleteCandidate;
+window.openEditModal = openEditModal;
+window.saveCandidateEdit = saveCandidateEdit;
+window.changeElectionMode = changeElectionMode;
+window.addVoterToWhitelist = addVoterToWhitelist;
 window.toggleAdminPanel = () => {
     const p = document.getElementById("adminSection");
     p.style.display = p.style.display === "none" ? "block" : "none";
