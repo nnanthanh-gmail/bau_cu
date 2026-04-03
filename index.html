@@ -21,7 +21,6 @@
                 <i class="fas fa-check-to-slot logo-icon"></i>
                 <h1>Hệ Thống Bỏ Phiếu Blockchain</h1>
                 <p class="subtitle">Minh bạch · Bảo mật · Phi tập trung</p>
-                <p class="hero-note">Tông màu lấy cảm hứng từ bầu trời xanh và sắc tím xanh núi tuyết, ưu tiên độ tương phản để đọc rõ hơn ở cả nền sáng lẫn nền tối.</p>
             </header>
 
             <div id="authSection" class="auth-container">
@@ -45,7 +44,9 @@
                         <div class="avatar-chip"><i class="fas fa-user-circle"></i></div>
                         <div class="user-copy">
                             <span id="displayName" class="display-name">Xin chào: ...</span>
-                            <span class="user-meta">Phiên bầu cử theo thời gian thực</span>
+                            <div id="voterStatusLabel" class="user-meta" style="color: var(--primary-color); font-weight: 500;">
+                                <i class="fas fa-ticket-alt"></i> Đang tải thông tin phiếu...
+                            </div>
                         </div>
                         <span id="userRole" class="role-pill"></span>
                     </div>
@@ -59,29 +60,34 @@
                 <div id="adminSection" style="display: none;" class="admin-panel card">
                     <div class="section-tag">Quản trị</div>
                     <h3><i class="fas fa-tools"></i> Cấu hình hệ thống</h3>
-                    <p class="section-note">Quản lý chế độ bầu cử, whitelist và danh sách ứng cử viên.</p>
+                    <p class="section-note">Quản lý chế độ bầu cử, whitelist và giới hạn phiếu bầu.</p>
                     <hr>
 
                     <div class="form-card muted-block">
                         <label class="field-label"><i class="fas fa-shield-halved"></i> Chế độ quyền truy cập</label>
                         <select id="electionModeSelect" onchange="changeElectionMode()" class="field-control">
                             <option value="false">Công khai (Tất cả mọi người)</option>
-                            <option value="true">Giới hạn (Chỉ whitelist)</option>
+                            <option value="true">Giới hạn (Chỉ Cử tri được cấp phép)</option>
                         </select>
                     </div>
 
                     <div id="whitelistManager" style="display: none;" class="form-card whitelist-card">
-                        <label class="field-label"><i class="fas fa-user-plus"></i> Thêm ví vào whitelist</label>
+                        <label class="field-label"><i class="fas fa-user-plus"></i> Quản Lý Danh Sách Cử Tri</label>
                         <div class="admin-input-group">
                             <input type="text" id="whitelistAddressInput" placeholder="Dán địa chỉ ví 0x...">
                             <button onclick="addVoterToWhitelist()" class="btn-success">Thêm</button>
+                        </div>
+                        
+                        <div id="whitelistDisplay" class="whitelist-container" style="margin-top: 15px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--bg-muted);">
+                            <p class="section-note" style="margin-bottom: 8px;">Ví có quyền truy cập (<span id="whitelistCount">0</span>):</p>
+                            <div id="whitelistItems"></div>
                         </div>
                     </div>
 
                     <div class="action-row">
                         <button id="startElectionBtn" onclick="handleStartElection()" class="btn-warning" style="display:none;">
                             <i class="fas fa-play"></i>
-                            <span>Bắt Đầu Bầu Cử</span>
+                            <span>Thiết Lập Đợt Mới</span>
                         </button>
 
                         <button id="stopElectionBtn" onclick="handleEndElection()" class="btn-danger" style="display:none;">
@@ -111,8 +117,8 @@
 
                 <div class="card history-card">
                     <div class="section-tag">Minh bạch</div>
-                    <h3><i class="fas fa-fingerprint"></i> Danh sách hash phiếu bầu</h3>
-                    <p class="section-note">Theo dõi các bản ghi mới nhất để kiểm tra tính công khai của quá trình bỏ phiếu.</p>
+                    <h3><i class="fas fa-fingerprint"></i> Danh sách phiếu bầu</h3>
+                    <p class="section-note">Theo dõi các bản ghi mới nhất bao gồm thời gian thực và đợt bầu chọn.</p>
                     <hr>
                     <div id="voteHistoryList" class="history-list">
                         <p>Đang tải lịch sử giao dịch...</p>
