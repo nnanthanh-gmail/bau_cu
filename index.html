@@ -21,20 +21,31 @@
                 <i class="fas fa-check-to-slot logo-icon"></i>
                 <h1>Hệ Thống Bỏ Phiếu Blockchain</h1>
                 <p class="subtitle">Minh bạch · Bảo mật · Phi tập trung</p>
+                <p class="hero-note">Đã bổ sung bầu nhiều người, lịch sử các đợt bầu cử, whitelist đầy đủ hơn, danh sách cử tri, ảnh ứng cử viên và hash giao dịch thật từ event.</p>
             </header>
 
             <div id="authSection" class="auth-container">
                 <div class="card auth-card">
                     <div class="section-tag">Xác thực</div>
                     <i class="fas fa-user-shield auth-icon"></i>
-                    <h2>Xác Thực Danh Tính</h2>
-                    <p class="auth-description">Nhập tên tài khoản để tiếp tục. Thông tin này sẽ được ghi lên blockchain sau khi xác nhận.</p>
-                    <input type="text" id="voterNameInput" placeholder="Ví dụ: Nguyễn Văn A...">
-                    <button onclick="handleAuth()" class="btn-main">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Xác Nhận & Đăng Nhập</span>
+                    <h2>Kết Nối Ví & Đăng Ký</h2>
+                    <p class="auth-description">Kết nối MetaMask trước, sau đó đăng ký tên cử tri để vào hệ thống.</p>
+
+                    <button id="connectWalletBtn" onclick="connectWallet()" class="btn-secondary auth-connect-btn">
+                        <i class="fas fa-wallet"></i>
+                        <span>Kết nối MetaMask</span>
                     </button>
-                    <p class="note"><i class="fas fa-info-circle"></i> Tên người bầu được lưu vĩnh viễn trên blockchain.</p>
+
+                    <div id="walletStatus" class="wallet-status">Chưa kết nối ví.</div>
+
+                    <div id="registerPanel" style="display:none; margin-top:16px;">
+                        <input type="text" id="voterNameInput" placeholder="Ví dụ: Nguyễn Văn A...">
+                        <button onclick="handleRegister()" class="btn-main">
+                            <i class="fas fa-id-card"></i>
+                            <span>Đăng ký tên cử tri</span>
+                        </button>
+                        <p class="note"><i class="fas fa-info-circle"></i> Tên cử tri được lưu trên blockchain.</p>
+                    </div>
                 </div>
             </div>
 
@@ -44,9 +55,7 @@
                         <div class="avatar-chip"><i class="fas fa-user-circle"></i></div>
                         <div class="user-copy">
                             <span id="displayName" class="display-name">Xin chào: ...</span>
-                            <div id="voterStatusLabel" class="user-meta" style="color: var(--primary-color); font-weight: 500;">
-                                <i class="fas fa-ticket-alt"></i> Đang tải thông tin phiếu...
-                            </div>
+                            <span id="userMeta" class="user-meta">Phiên bầu cử theo thời gian thực</span>
                         </div>
                         <span id="userRole" class="role-pill"></span>
                     </div>
@@ -60,51 +69,63 @@
                 <div id="adminSection" style="display: none;" class="admin-panel card">
                     <div class="section-tag">Quản trị</div>
                     <h3><i class="fas fa-tools"></i> Cấu hình hệ thống</h3>
-                    <p class="section-note">Quản lý chế độ bầu cử, whitelist và giới hạn phiếu bầu.</p>
+                    <p class="section-note">Quản lý chế độ bầu cử, whitelist, cử tri và danh sách ứng cử viên.</p>
                     <hr>
 
-                    <div class="form-card muted-block">
-                        <label class="field-label"><i class="fas fa-shield-halved"></i> Chế độ quyền truy cập</label>
-                        <select id="electionModeSelect" onchange="changeElectionMode()" class="field-control">
-                            <option value="false">Công khai (Tất cả mọi người)</option>
-                            <option value="true">Giới hạn (Chỉ Cử tri được cấp phép)</option>
-                        </select>
+                    <div class="form-grid-2">
+                        <div class="form-card muted-block">
+                            <label class="field-label"><i class="fas fa-shield-halved"></i> Chế độ quyền truy cập</label>
+                            <select id="electionModeSelect" onchange="changeElectionMode()" class="field-control">
+                                <option value="false">Công khai (Tất cả mọi người)</option>
+                                <option value="true">Giới hạn (Chỉ whitelist)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-card muted-block">
+                            <label class="field-label"><i class="fas fa-play"></i> Tạo đợt bầu cử mới</label>
+                            <div class="stack-sm">
+                                <input type="text" id="electionDurationInput" placeholder="Số phút, ví dụ 10">
+                                <input type="text" id="maxSelectionsInput" placeholder="Số người được chọn, ví dụ 1 hoặc 3">
+                                <div class="action-row compact-row">
+                                    <button id="startElectionBtn" onclick="handleStartElection()" class="btn-warning" style="display:none;">
+                                        <i class="fas fa-play"></i>
+                                        <span>Bắt Đầu Bầu Cử</span>
+                                    </button>
+                                    <button id="stopElectionBtn" onclick="handleEndElection()" class="btn-danger" style="display:none;">
+                                        <i class="fas fa-stop-circle"></i>
+                                        <span>Dừng Ngay</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div id="whitelistManager" style="display: none;" class="form-card whitelist-card">
-                        <label class="field-label"><i class="fas fa-user-plus"></i> Quản Lý Danh Sách Cử Tri</label>
-                        <div class="admin-input-group">
-                            <input type="text" id="whitelistAddressInput" placeholder="Dán địa chỉ ví 0x...">
-                            <button onclick="addVoterToWhitelist()" class="btn-success">Thêm</button>
+                    <div class="form-grid-2">
+                        <div id="whitelistManager" style="display: none;" class="form-card whitelist-card">
+                            <label class="field-label"><i class="fas fa-user-plus"></i> Quản lý whitelist</label>
+                            <div class="admin-input-group">
+                                <input type="text" id="whitelistAddressInput" placeholder="Dán địa chỉ ví 0x...">
+                                <button onclick="addVoterToWhitelist()" class="btn-success">Thêm</button>
+                            </div>
+                            <div id="whitelistList" class="mini-list"></div>
                         </div>
-                        
-                        <div id="whitelistDisplay" class="whitelist-container" style="margin-top: 15px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--bg-muted);">
-                            <p class="section-note" style="margin-bottom: 8px;">Ví có quyền truy cập (<span id="whitelistCount">0</span>):</p>
-                            <div id="whitelistItems"></div>
+
+                        <div class="form-card">
+                            <label class="field-label"><i class="fas fa-user-plus"></i> Thêm ứng cử viên</label>
+                            <div class="stack-sm">
+                                <input type="text" id="candidateNameInput" placeholder="Tên ứng cử viên mới...">
+                                <input type="text" id="candidateImageInput" placeholder="URL ảnh ứng cử viên (có thể bỏ trống)">
+                                <button onclick="addNewCandidate()" class="btn-main btn-inline">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Thêm ứng cử viên</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="action-row">
-                        <button id="startElectionBtn" onclick="handleStartElection()" class="btn-warning" style="display:none;">
-                            <i class="fas fa-play"></i>
-                            <span>Thiết Lập Đợt Mới</span>
-                        </button>
-
-                        <button id="stopElectionBtn" onclick="handleEndElection()" class="btn-danger" style="display:none;">
-                            <i class="fas fa-stop-circle"></i>
-                            <span>Dừng Ngay</span>
-                        </button>
                     </div>
 
                     <div class="form-card">
-                        <label class="field-label"><i class="fas fa-user-plus"></i> Thêm ứng cử viên</label>
-                        <div class="admin-input-group">
-                            <input type="text" id="candidateNameInput" placeholder="Tên ứng cử viên mới...">
-                            <button onclick="addNewCandidate()" class="btn-main btn-inline">
-                                <i class="fas fa-plus"></i>
-                                <span>Thêm</span>
-                            </button>
-                        </div>
+                        <label class="field-label"><i class="fas fa-users"></i> Danh sách cử tri đã đăng ký</label>
+                        <div id="registeredVotersList" class="mini-list"></div>
                     </div>
                 </div>
 
@@ -113,29 +134,47 @@
                         <i class="fas fa-signal"></i>
                         <span id="timerDisplay">Đang chờ khởi tạo...</span>
                     </div>
-                </div>
-
-                <div class="card history-card">
-                    <div class="section-tag">Minh bạch</div>
-                    <h3><i class="fas fa-fingerprint"></i> Danh sách phiếu bầu</h3>
-                    <p class="section-note">Theo dõi các bản ghi mới nhất bao gồm thời gian thực và đợt bầu chọn.</p>
-                    <hr>
-                    <div id="voteHistoryList" class="history-list">
-                        <p>Đang tải lịch sử giao dịch...</p>
-                    </div>
+                    <div id="currentRoundSummary" class="status-summary"></div>
                 </div>
 
                 <div class="dashboard-grid">
                     <section class="results-section card">
                         <div class="section-tag">Kết quả</div>
-                        <h3><i class="fas fa-chart-bar"></i> Kết Quả Bầu Chọn</h3>
+                        <h3><i class="fas fa-chart-bar"></i> Kết Quả Đợt Hiện Tại</h3>
                         <div id="resultsChart" class="results-container"></div>
                     </section>
 
                     <section class="voting-section card">
                         <div class="section-tag">Ứng cử viên</div>
                         <h3><i class="fas fa-list-ul"></i> Danh Sách Ứng Cử Viên</h3>
+                        <p id="voteModeHint" class="section-note">Đang tải chế độ bỏ phiếu...</p>
                         <div id="candidateList" class="candidate-list-container"></div>
+                        <div id="bulkVoteActions" class="bulk-actions" style="display:none;">
+                            <button onclick="voteSelectedCandidates()" class="btn-main btn-inline">
+                                <i class="fas fa-check-double"></i>
+                                <span>Bầu các lựa chọn đã chọn</span>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="dashboard-grid lower-grid">
+                    <section class="card history-card">
+                        <div class="section-tag">Minh bạch</div>
+                        <h3><i class="fas fa-fingerprint"></i> Hash giao dịch phiếu bầu</h3>
+                        <p class="section-note">Hiển thị transaction hash thật từ các event trên chain.</p>
+                        <div id="voteHistoryList" class="history-list">
+                            <p>Đang tải lịch sử giao dịch...</p>
+                        </div>
+                    </section>
+
+                    <section class="card history-card">
+                        <div class="section-tag">Lịch sử</div>
+                        <h3><i class="fas fa-clock-rotate-left"></i> Các đợt bầu cử trước</h3>
+                        <p class="section-note">Lưu và xem lại từng round, số phiếu và cấu hình của mỗi đợt.</p>
+                        <div id="roundHistoryList" class="history-list">
+                            <p>Đang tải lịch sử các đợt...</p>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -145,11 +184,15 @@
     <div id="modalBackdrop" class="modal-backdrop" onclick="closeEditModal()"></div>
     <div id="editCandidateSection" class="edit-modal" style="display:none;">
         <h3>Chỉnh sửa ứng viên</h3>
-        <p class="section-note">Cập nhật tên hiển thị của ứng cử viên.</p>
+        <p class="section-note">Cập nhật tên hiển thị và ảnh của ứng cử viên.</p>
         <input type="hidden" id="editCandidateId">
         <div class="modal-field">
             <label for="editCandidateName">Tên mới</label>
             <input type="text" id="editCandidateName">
+        </div>
+        <div class="modal-field">
+            <label for="editCandidateImage">URL ảnh</label>
+            <input type="text" id="editCandidateImage" placeholder="https://...">
         </div>
         <div class="modal-actions">
             <button onclick="saveCandidateEdit()" class="btn-main btn-inline">Lưu</button>

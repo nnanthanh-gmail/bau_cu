@@ -776,114 +776,183 @@ html[data-theme="dark"] .form-card {
     }
 }
 
-.history-entry {
-    background: var(--bg-muted); /* Hoặc #f9f9f9 */
-    border-left: 4px solid #3498db;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 6px;
+.wallet-status {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--card-strong);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-weight: 600;
 }
-.history-item-header {
+
+.status-error {
+    color: var(--danger-color);
+    border-color: rgba(207, 94, 100, 0.35);
+}
+
+.auth-connect-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.form-grid-2,
+.lower-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.stack-sm {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 0.8rem;
-    font-weight: bold;
+    flex-direction: column;
+    gap: 12px;
 }
-.round-tag {
-    color: #e67e22;
-    background: rgba(230, 126, 34, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
+
+.compact-row {
+    margin-bottom: 0;
 }
-.candidate-id-tag {
-    color: #2ecc71;
-    font-weight: bold;
+
+.status-summary {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 14px;
 }
-/* --- TRẠNG THÁI PHIẾU BẦU CỦA NGƯỜI DÙNG --- */
-#voterStatusLabel {
+
+.status-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-top: 4px;
-    padding: 2px 8px;
-    background: rgba(var(--primary-rgb, 52, 152, 219), 0.1);
-    border-radius: 20px;
-    font-size: 0.85rem;
-    color: var(--primary-color);
+    padding: 9px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
 }
 
-#voterStatusLabel i {
+.small-badge {
     font-size: 0.75rem;
+    padding: 6px 10px;
 }
 
-/* --- ĐỊNH DẠNG DÒNG LỊCH SỬ PHIẾU BẦU --- */
-.history-entry {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-left: 4px solid var(--primary-color);
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    transition: transform 0.2s;
-}
-
-.history-entry:hover {
-    transform: translateX(5px);
-}
-
-.history-item-header {
+.mini-list {
+    margin-top: 14px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.mini-list-row {
+    display: flex;
     align-items: center;
-    margin-bottom: 8px;
-    border-bottom: 1px dashed var(--border-color);
-    padding-bottom: 6px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--card-strong);
+    border: 1px solid var(--border-color);
 }
 
-/* Tag đợt bầu chọn (Round) */
-.round-tag {
-    background: linear-gradient(135deg, #e67e22, #d35400);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-transform: uppercase;
+.voter-row {
+    align-items: flex-start;
 }
 
-/* Tag thời gian */
-.time-tag {
-    font-size: 0.8rem;
+.voter-flags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.mini-danger-btn {
+    border: none;
+    border-radius: 12px;
+    min-height: 38px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--danger-color), #b85059);
+}
+
+.bulk-actions {
+    margin-top: 16px;
+}
+
+.candidate-media {
+    flex-shrink: 0;
+}
+
+.candidate-photo {
+    width: 58px;
+    height: 58px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+}
+
+.fallback-avatar {
+    width: 58px;
+    height: 58px;
+}
+
+.candidate-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: rgba(110, 168, 219, 0.12);
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.candidate-checkbox {
+    width: 18px;
+    height: 18px;
+}
+
+.vote-disabled {
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(110, 168, 219, 0.10);
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.muted-inline {
+    display: block;
+    margin-top: 4px;
     color: var(--text-muted);
 }
 
-/* Chi tiết ví và ứng viên */
-.history-item-body p {
-    margin: 4px 0;
-    font-size: 0.85rem;
-    color: var(--text-main);
+.round-card .history-hash {
+    margin-bottom: 10px;
 }
 
-.candidate-id-tag {
-    background: #2ecc71;
-    color: white;
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-weight: bold;
+@media (max-width: 900px) {
+    .form-grid-2,
+    .lower-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Tùy chỉnh danh sách cuộn cho Whitelist Admin */
-#whitelistItems {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
+@media (max-width: 720px) {
+    .mini-list-row,
+    .voter-row,
+    .status-summary {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-#whitelistItems div:hover {
-    background: rgba(0,0,0,0.03);
-}
-
-[data-theme="dark"] #whitelistItems div:hover {
-    background: rgba(255,255,255,0.05);
+    .voter-flags {
+        justify-content: flex-start;
+    }
 }
